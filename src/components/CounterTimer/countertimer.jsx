@@ -1,39 +1,73 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react';
 
 const CountTime = () => {
+  const [time, setTime] = useState(0);
+  const [isActive, setIsActive] = useState(false);
+  const [isPause, setIsPause] = useState(false);
+  const intervalRef = useRef(null);
 
-  const [ time ,setTime] = useState(0)
+  const handleInput = (e) => {
+    setTime(parseInt(e.target.value * 60));
+  };
 
-const handleInput =(e) =>{
-  setTime(parseInt(e.target.value * 60));
-}
-const formatTime = ()=>{
-  const min= String(Math.floor(time/60)).padStart(2,'0');
-  const sec = String(time%60).padStart(2,'0');
-  return `${min} : ${sec}`;
-}
+  const formatTime = () => {
+    const min = String(Math.floor(time / 60)).padStart(2, '0');
+    const sec = String(time % 60).padStart(2, '0');
+    return `${min} : ${sec}`;
+  };
+
+  const handleStart = () => {
+    setIsActive(true);
+    setIsPause(false);
+  };
+
+  const handlePause = () => {
+    setIsPause(!isPause);
+  };
+
+  const handleReset = () => {
+    clearInterval(intervalRef.current);
+    setIsActive(false);
+    setIsPause(false);
+    setTime(0);
+  };
+
+  useEffect(() => {
+    if (isActive && !isPause && time > 0) {
+      intervalRef.current = setInterval(() => {
+        setTime((prev) => prev - 1);
+      }, 1000);
+    } else if (time === 0) {
+      clearInterval(intervalRef.current);
+      setIsActive(false);
+      alert('Your time is up');
+    }
+
+    return () => clearInterval(intervalRef.current);
+  }, [isActive, isPause, time]);
+
+ 
+
+
+
   return (
-    <>
-        <div className='countdown-timer'>
-        <h1>Contdown Timer</h1>
-        <div className='timer-display'>
-
-          <input  onChange={handleInput} type="number"  placeholder='Enter Time In Minutes'/>
-
-          <div>{formatTime()}</div>
-
-          <div className='timer-controls'>
-
-            <button>Start</button>
-            <button>Pause</button>
-            <button>Reset</button>
-
-          </div>
+    <div className="countdown-timer">
+      <h1>Countdown Timer</h1>
+      <div className="timer-display">
+        <input
+          onChange={handleInput}
+          type="number"
+          placeholder="Enter Time In Minutes"
+        />
+        <div>{formatTime()}</div>
+        <div className="timer-controls">
+          <button onClick={handleStart} disabled={isActive && !isPause}>Start</button>
+          <button onClick={handlePause} disabled={!isActive}>{isPause ? 'Resume' : 'Pause'}</button>
+          <button onClick={handleReset}>Reset</button>
         </div>
+      </div>
+    </div>
+  );
+};
 
-        </div>
-
-    </> 
-  )  }
-
-    export default CountTime 
+export default CountTime;
